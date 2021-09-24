@@ -2,28 +2,25 @@ package me.fetsh.geekbrains.libraries.rxconvert.view
 
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import me.fetsh.geekbrains.libraries.rxconvert.R
 import me.fetsh.geekbrains.libraries.rxconvert.contract.Contract
 import me.fetsh.geekbrains.libraries.rxconvert.databinding.ActivityMainBinding
-import me.fetsh.geekbrains.libraries.rxconvert.model.MainActivityModel
 import me.fetsh.geekbrains.libraries.rxconvert.presenter.MainActivityPresenter
+import moxy.MvpAppCompatActivity
+import moxy.ktx.moxyPresenter
 import java.io.File
 
 
-class MainActivity : AppCompatActivity(), Contract.View {
+class MainActivity : MvpAppCompatActivity(), Contract.View {
 
     private var binding : ActivityMainBinding? = null
-    private var presenter: Contract.Presenter? = null
+    private val presenter by moxyPresenter { MainActivityPresenter(cacheDir) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-
-        presenter = MainActivityPresenter(this, MainActivityModel(cacheDir))
-        presenter?.init()
     }
 
     override fun init() {
@@ -41,8 +38,9 @@ class MainActivity : AppCompatActivity(), Contract.View {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        binding?.button?.setOnClickListener { presenter?.compress() }
-
+        binding?.button?.clicks()?.let {
+            presenter?.observeClicks(it)
+        }
     }
 
     override fun showInitial() {
@@ -73,9 +71,5 @@ class MainActivity : AppCompatActivity(), Contract.View {
         binding?.status?.visibility = View.VISIBLE
         binding?.progressBar?.visibility = View.GONE
         binding?.button?.isEnabled = true
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        presenter?.onDestroy()
     }
 }

@@ -2,11 +2,9 @@ package me.fetsh.geekbrains.libraries.rxconvert.model
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import io.reactivex.rxjava3.core.Single
 import me.fetsh.geekbrains.libraries.rxconvert.contract.Contract
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.RuntimeException
 
 
 class MainActivityModel(private val cacheDir : File) : Contract.Model {
@@ -16,25 +14,26 @@ class MainActivityModel(private val cacheDir : File) : Contract.Model {
         sourceFile = file
     }
 
-    override fun compress(): Single<Contract.Result> {
-        return Single.fromCallable {
-            sourceFile?.let { source ->
-                try {
-                    val resultFile = File.createTempFile(
-                        "${source.nameWithoutExtension}_${System.currentTimeMillis()}",
-                        ".png",
-                        cacheDir
-                    )
-                    val bmp: Bitmap = BitmapFactory.decodeFile(source.path)
-                    FileOutputStream(resultFile).also { os ->
-                        bmp.compress(Bitmap.CompressFormat.PNG, 100, os)
-                        os.close()
-                    }
-                    return@fromCallable Result.Success(resultFile)
-                } catch (e: Throwable) {
-                    return@fromCallable Result.Error(e)
+    override fun compress(): Contract.Result {
+        android.util.Log.d("AAA", "Compressing started")
+        return sourceFile?.let { source ->
+            try {
+                val resultFile = File.createTempFile(
+                    "${source.nameWithoutExtension}_${System.currentTimeMillis()}",
+                    ".png",
+                    cacheDir
+                )
+                val bmp: Bitmap = BitmapFactory.decodeFile(source.path)
+                FileOutputStream(resultFile).also { os ->
+                    bmp.compress(Bitmap.CompressFormat.PNG, 100, os)
+                    os.close()
                 }
-            } ?: Result.Error(IllegalStateException("No file to process"))
-        }
+                android.util.Log.d("AAA", "Compressing finished")
+                Result.Success(resultFile)
+            } catch (e: Throwable) {
+                android.util.Log.d("AAA", "Compressing failed")
+                Result.Error(e)
+            }
+        } ?: Result.Error(IllegalStateException("No file to process"))
     }
 }
