@@ -21,6 +21,7 @@ class MainActivity : MvpAppCompatActivity(), Contract.View {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
+
     }
 
     override fun init() {

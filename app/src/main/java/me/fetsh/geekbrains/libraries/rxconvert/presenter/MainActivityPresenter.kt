@@ -1,7 +1,9 @@
 package me.fetsh.geekbrains.libraries.rxconvert.presenter
 
+import androidx.lifecycle.Observer
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import me.fetsh.geekbrains.libraries.rxconvert.contract.Contract
 import me.fetsh.geekbrains.libraries.rxconvert.model.MainActivityModel
@@ -16,36 +18,49 @@ class MainActivityPresenter(
 ) : MvpPresenter<Contract.View>(), Contract.Presenter {
 
     private val model : MainActivityModel = MainActivityModel(cacheDir)
+    private var resultObserver : Observer<Contract.Result>? = null
+    private var clicksObserver : Disposable? = null
 
     override fun onFirstViewAttach() {
         viewState?.init()
-        viewState?.showInitial()
-    }
-    override fun init() {
-        viewState?.init()
-        viewState?.showInitial()
+        resultObserver = Observer { result : Contract.Result ->
+            when(result) {
+                is Result.Initial -> {
+                    viewState?.showInitial()
+                }
+                is Result.Loading -> {
+                    viewState?.showLoading()
+                }
+                is Result.Success -> {
+                    viewState?.showSuccess(result.file.name)
+                }
+                is Result.Error -> {
+                    viewState?.showFailure(result.error.toString())
+                }
+                else -> viewState?.showInitial()
+            }
+        }
+        resultObserver?.let { model.compressionResult().observeForever(it) }
     }
 
     override fun observeClicks(observable: Observable<Unit>) {
-        observable
+        clicksObserver = observable
             .subscribeOn(AndroidSchedulers.mainThread())
-            .doOnNext { viewState?.showLoading() }
             .observeOn(Schedulers.io())
             .map { model.compress() }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { result ->
-                when(result) {
-                    is Result.Success -> {
-                        viewState?.showSuccess(result.file.name)
-                    }
-                    is Result.Error -> {
-                        viewState?.showFailure(result.error.toString())
-                    }
-                }
-            }
+            .subscribe()
     }
+
+
 
     override fun setFile(file : File) {
         model.setFile(file)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        resultObserver?.let { model.compressionResult().removeObserver(it) }
+        clicksObserver?.dispose()
     }
 }

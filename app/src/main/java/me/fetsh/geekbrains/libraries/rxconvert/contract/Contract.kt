@@ -1,5 +1,6 @@
 package me.fetsh.geekbrains.libraries.rxconvert.contract
 
+import androidx.lifecycle.LiveData
 import io.reactivex.rxjava3.core.Observable
 import moxy.MvpPresenter
 import moxy.MvpView
@@ -26,14 +27,14 @@ interface Contract {
     }
 
     interface Presenter {
-        fun init()
         fun observeClicks(observable : Observable<Unit>)
         fun setFile(file : File)
     }
 
     interface Model {
+        fun compressionResult() : LiveData<Result>
         fun setFile(file : File)
-        fun compress() : Result
+        fun compress()
     }
 
     interface Result
