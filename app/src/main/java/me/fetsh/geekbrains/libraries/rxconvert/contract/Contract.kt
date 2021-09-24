@@ -1,5 +1,6 @@
 package me.fetsh.geekbrains.libraries.rxconvert.contract
 
+import io.reactivex.rxjava3.core.Single
 import java.io.File
 
 interface Contract {
@@ -9,11 +10,12 @@ interface Contract {
 
         fun showInitial()
         fun showLoading()
-        fun showFailure()
-        fun showSuccess()
+        fun showFailure(string: String)
+        fun showSuccess(string: String)
     }
 
     interface Presenter {
+        fun init()
         fun setFile(file : File)
         fun compress()
         fun onDestroy()
@@ -21,7 +23,9 @@ interface Contract {
 
     interface Model {
         fun setFile(file : File)
-        fun compress()
+        fun compress() : Single<Result>
     }
+
+    interface Result
 
 }

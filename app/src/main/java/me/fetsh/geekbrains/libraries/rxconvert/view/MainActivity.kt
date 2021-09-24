@@ -11,6 +11,7 @@ import me.fetsh.geekbrains.libraries.rxconvert.model.MainActivityModel
 import me.fetsh.geekbrains.libraries.rxconvert.presenter.MainActivityPresenter
 import java.io.File
 
+
 class MainActivity : AppCompatActivity(), Contract.View {
 
     private var binding : ActivityMainBinding? = null
@@ -21,11 +22,25 @@ class MainActivity : AppCompatActivity(), Contract.View {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        presenter = MainActivityPresenter(this, MainActivityModel())
+        presenter = MainActivityPresenter(this, MainActivityModel(cacheDir))
+        presenter?.init()
     }
 
     override fun init() {
-        presenter?.setFile(File(resources.getIdentifier("image", "raw", packageName)))
+        try {
+            resources.openRawResource(R.raw.image).use { stream ->
+                val filename = "image.jpg"
+                val file = File(filesDir, filename)
+                if (!file.exists()) {
+                    val outputStream = openFileOutput(filename, MODE_PRIVATE)
+                    stream.copyTo(outputStream)
+                    outputStream.close()
+                }
+                presenter?.setFile(file)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         binding?.button?.setOnClickListener { presenter?.compress() }
 
     }
@@ -44,17 +59,17 @@ class MainActivity : AppCompatActivity(), Contract.View {
         binding?.button?.isEnabled = false
     }
 
-    override fun showFailure() {
+    override fun showFailure(string: String) {
         binding?.status?.setTextColor(ContextCompat.getColor(this, R.color.red))
-        binding?.status?.text = "Failure"
+        binding?.status?.text = "Failure:\n$string"
         binding?.status?.visibility = View.VISIBLE
         binding?.progressBar?.visibility = View.GONE
         binding?.button?.isEnabled = true
     }
 
-    override fun showSuccess() {
+    override fun showSuccess(string: String) {
         binding?.status?.setTextColor(ContextCompat.getColor(this, R.color.teal_700))
-        binding?.status?.text = "Success"
+        binding?.status?.text = "Success:\n$string"
         binding?.status?.visibility = View.VISIBLE
         binding?.progressBar?.visibility = View.GONE
         binding?.button?.isEnabled = true
