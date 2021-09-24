@@ -33,13 +33,13 @@ class MainActivity : MvpAppCompatActivity(), Contract.View {
                     stream.copyTo(outputStream)
                     outputStream.close()
                 }
-                presenter?.setFile(file)
+                presenter.setFile(file)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         binding?.button?.clicks()?.let {
-            presenter?.observeClicks(it)
+            presenter.observeClicks(it)
         }
     }
 

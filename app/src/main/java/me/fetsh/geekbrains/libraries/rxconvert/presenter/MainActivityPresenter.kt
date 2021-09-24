@@ -21,10 +21,6 @@ class MainActivityPresenter(
         viewState?.init()
         viewState?.showInitial()
     }
-    override fun init() {
-        viewState?.init()
-        viewState?.showInitial()
-    }
 
     override fun observeClicks(observable: Observable<Unit>) {
         observable

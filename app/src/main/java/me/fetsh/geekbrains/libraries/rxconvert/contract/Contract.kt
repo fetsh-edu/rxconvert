@@ -26,7 +26,6 @@ interface Contract {
     }
 
     interface Presenter {
-        fun init()
         fun observeClicks(observable : Observable<Unit>)
         fun setFile(file : File)
     }
